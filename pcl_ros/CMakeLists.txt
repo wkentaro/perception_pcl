@@ -48,6 +48,7 @@ generate_dynamic_reconfigure_options(
   cfg/RadiusOutlierRemoval.cfg
   cfg/VoxelGrid.cfg
   cfg/CropBox.cfg
+  cfg/PcdToPointCloud.cfg
 )
 
 ## Declare the catkin package

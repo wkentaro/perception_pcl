@@ -45,12 +45,14 @@
 
 // ROS core
 #include <ros/ros.h>
+#include <dynamic_reconfigure/server.h>
 #include <pcl/io/io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 
 #include "pcl_ros/publisher.h"
+#include "pcl_ros/PcdToPointCloudConfig.h"
 
 using namespace std;
 
@@ -67,6 +69,10 @@ class PCDGenerator
 
     string file_name_, cloud_topic_;
     double wait_;
+    boost::mutex mutex_;
+
+    typedef pcl_ros::PcdToPointCloudConfig Config;
+    boost::shared_ptr<dynamic_reconfigure::Server<Config> > srv_;
 
     pcl_ros::Publisher<sensor_msgs::PointCloud2> pub_;
 
@@ -78,6 +84,10 @@ class PCDGenerator
       cloud_topic_ = "cloud_pcd";
       pub_.advertise (nh_, cloud_topic_.c_str (), 1);
       private_nh_.param("frame_id", tf_frame_, std::string("/base_link"));
+      srv_ = boost::make_shared <dynamic_reconfigure::Server<Config> > (private_nh_);
+      dynamic_reconfigure::Server<Config>::CallbackType f =
+        boost::bind (&PCDGenerator::reconfigCb, this, _1, _2);
+      srv_->setCallback (f);
       ROS_INFO ("Publishing data on topic %s with frame_id %s.", nh_.resolveName (cloud_topic_).c_str (), tf_frame_.c_str());
     }
 
@@ -88,8 +98,24 @@ class PCDGenerator
     {
       if (file_name_ == "" || pcl::io::loadPCDFile (file_name_, cloud_) == -1)
         return (-1);
+      private_nh_.setParam("file_name", file_name_);
       cloud_.header.frame_id = tf_frame_;
       return (0);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // Reconfigure
+    void reconfigCb(Config &config, uint32_t level)
+    {
+      boost::mutex::scoped_lock lock(mutex_);
+      sensor_msgs::PointCloud2 cloud;
+      if (config.file_name == "" || pcl::io::loadPCDFile (config.file_name, cloud) == -1) {
+        ROS_ERROR("Cannot load pcd file '%s'", file_name_.c_str());
+      } else {
+        file_name_ = config.file_name;
+        cloud_ = cloud;
+        cloud_.header.frame_id = tf_frame_;
+      }
     }
 
     ////////////////////////////////////////////////////////////////////////////////
