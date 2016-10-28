@@ -5,7 +5,7 @@ project(pcl_ros)
 find_package(cmake_modules REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem thread)
 find_package(Eigen REQUIRED)
-find_package(PCL REQUIRED)
+find_package(PCL_1_8 REQUIRED)
 
 ## Find catkin packages
 find_package(catkin REQUIRED COMPONENTS
@@ -71,7 +71,7 @@ catkin_package(
   DEPENDS
     Boost
     Eigen
-    PCL
+    PCL_1_8
 )
 
 ## Declare the pcl_ros_tf library
