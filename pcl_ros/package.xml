@@ -51,6 +51,7 @@
     <nodelet plugin="${prefix}/plugins/nodelet/libpcl_ros_io.xml"/>
     <nodelet plugin="${prefix}/plugins/nodelet/libpcl_ros_segmentation.xml"/>
     <nodelet plugin="${prefix}/plugins/nodelet/libpcl_ros_surface.xml"/>
+    <rosdoc config="rosdoc.yaml"/>
   </export>
 
 </package>
